@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tesla OAuth callback</title>
+</head>
+<body>
+  <h1>Tesla authorization callback</h1>
+  <p>If Tesla redirected you here, copy the <code>code</code> value below and use it in the token exchange. Do not share it.</p>
+  <pre id="out">Waiting for query string…</pre>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const error = params.get('error');
+    const out = document.getElementById('out');
+    if (error) {
+      out.textContent = 'Error: ' + error + '\n' + (params.get('error_description') || '');
+    } else if (code) {
+      out.textContent = 'code=' + code + '\nstate=' + (params.get('state') || '');
+    } else {
+      out.textContent = 'No code in URL. Open this page only as Tesla redirect_uri.';
+    }
+  </script>
+</body>
+</html>

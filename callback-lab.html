@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tesla authorization</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; color: #111; }
+    .ok { color: #0a7; }
+    .err { color: #b00; }
+  </style>
+</head>
+<body>
+  <h1>Tesla authorization</h1>
+  <p id="msg">Finishing sign-in…</p>
+  <script>
+    (async () => {
+      const msg = document.getElementById("msg");
+      const params = new URLSearchParams(location.search);
+      const error = params.get("error");
+      const code = params.get("code");
+      const state = params.get("state");
+      // Drop query from address bar ASAP (code must not linger in history UI)
+      history.replaceState({}, "", location.pathname);
+
+      if (error) {
+        msg.className = "err";
+        msg.textContent = "Authorization was denied or failed. You can close this window.";
+        return;
+      }
+      if (!code || !state) {
+        msg.className = "err";
+        msg.textContent = "Open this page only as the Tesla redirect. Nothing to do.";
+        return;
+      }
+
+      const EXCHANGE_URL = "https://tesla-oauth-lab.khandfw.workers.dev/tesla/exchange";
+      try {
+        const res = await fetch(EXCHANGE_URL, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ code, state }),
+        });
+        if (res.ok) {
+          msg.className = "ok";
+          msg.textContent = "Authorized — you can close this window.";
+        } else {
+          msg.className = "err";
+          msg.textContent = "Handoff failed — ask Energy Analyst to retry.";
+        }
+      } catch (e) {
+        msg.className = "err";
+        msg.textContent = "Handoff failed — ask Energy Analyst to retry.";
+      }
+    })();
+  </script>
+</body>
+</html>
